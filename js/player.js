@@ -2573,11 +2573,18 @@ function renderResourceInfoBar() {
       </button>
       <div class="quick-player-actions">
         ${currentEpisodes.length > 1 ? '<button type="button" id="quickEpisodesButton" aria-expanded="false" onclick="toggleQuickEpisodes()">选集</button>' : ''}
+        <button type="button" id="quickSettingsButton" aria-expanded="false" onclick="toggleQuickSettings()">播放设置</button>
         <button type="button" onclick="QuickPlay.details()">影片详情</button>
         <button type="button" onclick="QuickPlay.restart()">从头播放</button>
       </div>
     `;
     document.querySelectorAll('.quick-episode-section').forEach(section => { section.hidden = true; });
+}
+
+function toggleQuickSettings() {
+    const section = document.getElementById('playbackOptions');
+    section.hidden = !section.hidden;
+    document.getElementById('quickSettingsButton')?.setAttribute('aria-expanded', String(!section.hidden));
 }
 
 function toggleQuickEpisodes() {
@@ -2586,6 +2593,7 @@ function toggleQuickEpisodes() {
     const expanded = button?.getAttribute('aria-expanded') !== 'true';
     button?.setAttribute('aria-expanded', String(expanded));
     document.querySelectorAll('.quick-episode-section').forEach(section => { section.hidden = !expanded; });
+    document.getElementById('quickSettingsButton')?.setAttribute('aria-expanded', String(expanded));
 }
 
 window.QuickPlay.useSelection = ({ item, detail, index }) => {

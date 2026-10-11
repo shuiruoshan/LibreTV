@@ -72,7 +72,7 @@ function createElementStub(tagName = 'div') {
       return null;
     },
     addEventListener() {},
-    querySelectorAll() { return []; }
+    querySelectorAll() { return []; },
     remove() {}
   };
 }

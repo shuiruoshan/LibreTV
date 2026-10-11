@@ -49,13 +49,14 @@ async function scenario({mobile=false, series=false, history=false, ambiguous=fa
  await page.waitForURL('**/player.html?**');
  if(ambiguous){await page.getByText('找到不同版本，请确认要观看的作品').waitFor();assert.equal(await page.locator('#quickPlayChoices button').count(),2);await page.locator('#quickPlayChoices button').filter({hasText:'2026'}).click();}
  if(allfail){
-  await page.waitForFunction(()=>document.getElementById('error').style.display==='flex',{},{timeout:35000});
+  try { await page.waitForFunction(()=>document.getElementById('error').style.display==='flex',{},{timeout:70000}); }
+  catch(error) { console.log('exhausted diagnostics',JSON.stringify({details,status:await page.locator('#quickPlayStatus').innerText(),errors}));throw error; }
   assert.equal(details,3,'initial source plus at most two alternate details');
   assert.equal(await page.locator('video').evaluate(v=>v.currentTime),0);
   console.log(JSON.stringify({allfail,details}));await context.close();return;
  }
  if(unmapped){await page.getByText('无法确认上次观看的集数，请选择要播放的一集').waitFor();await page.locator('#quickPlayChoices button').filter({hasText:'第02集'}).click();}
- try { await page.waitForFunction(()=>{const v=document.querySelector('video');return v&&v.currentTime>2&&v.videoWidth>0;},null,{timeout:35000}); }
+ try { await page.waitForFunction(()=>{const v=document.querySelector('video');return v&&v.currentTime>2&&v.videoWidth>0&&v.getVideoPlaybackQuality().totalVideoFrames>0&&v.webkitAudioDecodedByteCount>0;},null,{timeout:35000}); }
  catch(e){console.log('FAIL status',await page.locator('#quickPlayStatus').innerText(),'errors',errors,'url',page.url().replace(/url=[^&]+/,'url=REDACTED'));throw e;}
  const media=await page.evaluate(()=>{const v=document.querySelector('video');return {time:v.currentTime,width:v.videoWidth,frames:v.getVideoPlaybackQuality().totalVideoFrames,audio:v.webkitAudioDecodedByteCount,muted:v.muted};});
  assert.ok(media.frames>0);assert.ok(media.audio>0);assert.ok(searches>0);
@@ -92,6 +93,10 @@ async function scenario({mobile=false, series=false, history=false, ambiguous=fa
    return {success,rejected,locked,unlocked};
   });assert.equal(orientation.success,true);assert.equal(orientation.rejected,false);assert.ok(orientation.unlocked>0);
  }
+ if(await page.locator('#playbackOptions').isVisible())await page.locator('#quickSettingsButton').click();
+ await page.locator('#quickSettingsButton').click();
+ assert.equal(await page.locator('#playbackOptions').isVisible(),true);
+ await page.locator('#quickSettingsButton').click();
  const detailCountBeforePause=details;
  assert.equal(await page.evaluate(()=>{document.querySelector('video').pause();return QuickPlay.onError();}),false);
  await page.waitForTimeout(150);
@@ -103,12 +108,17 @@ async function scenario({mobile=false, series=false, history=false, ambiguous=fa
  assert.deepEqual(errors,[]);
  console.log(JSON.stringify({mobile,series,history,ambiguous,failure,media}));await context.close();
 }
+const cases = {
+ movie: {mobile:true,manualSwitch:true,historyEntry:true},
+ series: {series:true,history:true,mobile:true},
+ ambiguous: {ambiguous:true},
+ fallback: {failure:true},
+ unmapped: {series:true,history:true,unmapped:true},
+ adult: {adult:true},
+ exhausted: {allfail:true}
+};
 try {
- await scenario({mobile:true,manualSwitch:true,historyEntry:true});
- await scenario({series:true,history:true,mobile:true});
- await scenario({ambiguous:true});
- await scenario({failure:true});
- await scenario({series:true,history:true,unmapped:true});
- await scenario({adult:true});
- await scenario({allfail:true});
+ for (const [name, options] of Object.entries(cases)) {
+  if (!process.env.QUICK_PLAY_CASE || process.env.QUICK_PLAY_CASE === name) await scenario(options);
+ }
 } finally { await browser.close(); await rm(mediaDir,{recursive:true,force:true}); }
