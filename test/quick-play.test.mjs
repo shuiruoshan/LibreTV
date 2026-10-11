@@ -54,3 +54,45 @@ test('episode labels preserve order even when two episodes share a URL', async (
   const episodes = sandbox.extractPlayableEpisodes(detail);
   assert.deepEqual(Array.from(sandbox.extractPlayableEpisodeNames(detail, episodes)), ['第01集', '第02集']);
 });
+
+test('startup timeouts try only two alternates, then expose a manual error', async () => {
+  const values = new Map([['selectedAPIs', '["a","b","c","d"]']]);
+  const elements = new Map();
+  const element = () => ({ hidden: true, textContent: '', querySelector: () => element(), replaceChildren() {}, appendChild() {} });
+  let location = new URL('https://example.com/player.html?quick=1&title=Test&year=2026&kind=movie&id=1&source=a');
+  const timers = [];
+  const selected = [];
+  const errors = [];
+  const sandbox = {
+    window: {}, URL, URLSearchParams, console, AbortController,
+    location,
+    history: { replaceState(_state, _title, url) { location = new URL(url); sandbox.location = location; } },
+    localStorage: { getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, String(value)) },
+    document: { getElementById(id) { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); }, createElement: element },
+    API_SITES: Object.fromEntries(['a','b','c','d'].map(key => [key, {name:key}])), DEFAULT_SELECTED_APIS: [],
+    API_CONFIG: { search: {path: '?wd='} }, PROXY_URL: '/proxy/',
+    getApiSearchContext: source => ({apiBaseUrl: `https://${source}.example/api`}),
+    getDetailApiParamsForSource: source => `&source=${source}`,
+    setTimeout(callback, delay) { const timer = {callback, delay}; timers.push(timer); return timer; },
+    clearTimeout(timer) { if (timer) timer.cancelled = true; },
+    fetch: async url => ({ok:true, json: async () => String(url).startsWith('/api/detail')
+      ? {episodes:['https://example.com/test.m3u8'],episodeNames:['正片']}
+      : {list:[{vod_id:'1',vod_name:'Test',vod_year:'2026',type_name:'movie'}]}})
+  };
+  sandbox.window.ProxyAuth = {addAuthToProxyUrl: async url => url};
+  sandbox.window.showError = message => errors.push(message);
+  vm.runInNewContext(await readFile(new URL('../js/quick-play.js', import.meta.url), 'utf8'), sandbox);
+  const quick = sandbox.window.QuickPlay;
+  const video = () => ({readyState:0,addEventListener(){}});
+  quick.useSelection = selection => { selected.push(selection.item.source_code); quick.attach(video()); };
+  assert.equal(await quick.prepare(),true);
+  quick.attach(video());
+  for (let attempt=0; attempt<3; attempt++) {
+    const timer = timers.findLast(timer => timer.delay===15000 && !timer.cancelled);
+    assert.ok(timer); timer.cancelled=true; timer.callback();
+    await new Promise(resolve => setImmediate(resolve));
+  }
+  assert.deepEqual(selected,['b','c']);
+  assert.equal(errors.length,1);
+  assert.equal(quick.onError(),false);
+});

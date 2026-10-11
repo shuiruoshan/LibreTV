@@ -299,7 +299,11 @@
         startupTimer = setTimeout(() => {
             // Loaded/paused media usually means autoplay was blocked: do not change source.
             if (video.readyState >= 2) { setStatus('已准备好，点击播放器开始观看'); return; }
-            onError();
+            if (!onError() && state && !state.played && !state.manual) {
+                state.manual = true;
+                setStatus('自动尝试已停止，请手动换源或选集');
+                window.showError?.('启动超时，请手动选择资源');
+            }
         }, 15000);
     }
     function details() {
