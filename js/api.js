@@ -13,6 +13,19 @@ function extractUrlsFromPlaySource(playSource) {
         .filter(url => /^https?:\/\//i.test(url));
 }
 
+function extractPlayableEpisodeNames(videoDetail, episodes) {
+    for (const group of String(videoDetail?.vod_play_url || '').split('$$$')) {
+        const entries = group.split('#').map(entry => {
+            const separator = entry.indexOf('$');
+            return { url: (separator >= 0 ? entry.slice(separator + 1) : entry).trim(), name: separator >= 0 ? entry.slice(0, separator).trim() : '' };
+        }).filter(entry => isDirectPlayableUrl(entry.url));
+        if (entries.length === episodes.length && entries.every((entry, index) => entry.url === episodes[index])) {
+            return entries.map(entry => entry.name);
+        }
+    }
+    return episodes.map(() => '');
+}
+
 function extractPlayableEpisodes(videoDetail) {
     if (!videoDetail) return [];
 
@@ -192,6 +205,7 @@ async function handleApiRequest(url) {
                 return JSON.stringify({
                     code: 200,
                     episodes: episodes,
+                    episodeNames: extractPlayableEpisodeNames(videoDetail, episodes),
                     detailUrl: detailUrl,
                     videoInfo: {
                         title: videoDetail.vod_name,

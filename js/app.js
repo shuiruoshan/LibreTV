@@ -870,7 +870,7 @@ async function search() {
         }
 
         // 添加XSS保护，使用textContent和属性转义
-        const safeResults = allResults.map(item => {
+        const safeResults = allResults.map((item, resultIndex) => {
             const safeId = item.vod_id ? item.vod_id.toString().replace(/[^\w-]/g, '') : '';
             const safeName = (item.vod_name || '').toString()
                 .replace(/</g, '&lt;')
@@ -895,7 +895,7 @@ async function search() {
 
             return `
                 <div class="card-hover bg-[#111] rounded-lg overflow-hidden cursor-pointer transition-all hover:scale-[1.02] h-full shadow-sm hover:shadow-md" 
-                     onclick="showDetails('${safeId}','${safeName}','${sourceCode}')" ${apiUrlAttr}>
+                     onclick="quickPlaySearchResult(${resultIndex})" ${apiUrlAttr}>
                     <div class="flex h-full">
                         ${hasCover ? `
                         <div class="relative flex-shrink-0 search-card-img-container">
@@ -927,6 +927,7 @@ async function search() {
                             
                             <div class="flex justify-between items-center mt-1 pt-1 border-t border-gray-800">
                                 ${sourceInfo ? `<div>${sourceInfo}</div>` : '<div></div>'}
+                                <button type="button" class="quick-card-details" onclick="event.stopPropagation(); quickPlaySearchResult(${resultIndex}, true)">详情</button>
                                 <!-- 接口名称过长会被挤变形
                                 <div>
                                     <span class="text-gray-500 flex items-center hover:text-blue-400 transition-colors">
@@ -1242,6 +1243,7 @@ async function showDetails(id, vod_name, sourceCode) {
             }
 
             currentEpisodes = data.episodes;
+            localStorage.setItem('currentEpisodeNames', JSON.stringify(data.episodeNames || []));
             currentEpisodeIndex = 0;
 
             detailBody.innerHTML = `
@@ -1603,3 +1605,10 @@ window.matchesYellowContent = matchesYellowContent;
 window.getResultTypeLabel = getResultTypeLabel;
 
 // 移除Node.js的require语句，因为这是在浏览器环境中运行的
+
+function quickPlaySearchResult(index, details = false) {
+    const item = currentSearchResults[index];
+    if (!item) return;
+    if (details) return showDetails(item.vod_id, item.vod_name, item.source_code);
+    QuickPlay.open({ ...QuickPlay.logic.identity(item), id: String(item.vod_id), source: item.source_code });
+}

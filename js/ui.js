@@ -574,6 +574,7 @@ async function playFromHistory(url, title, episodeIndex, playbackPosition = 0) {
                     // console.log(`成功获取 "${title}" 最新剧集列表:`, episodesList.length, "集");
                     // Update the history item in localStorage with the fresh episodes
                     if (historyItem) {
+                        historyItem.episodeNames = videoDetails.episodeNames || [];
                         historyItem.episodes = [...episodesList]; // Deep copy
                         historyItem.lastSyncTime = Date.now(); // Add sync timestamp
                         const history = JSON.parse(historyRaw); // Re-parse to ensure we have the latest version
@@ -672,7 +673,14 @@ async function playFromHistory(url, title, episodeIndex, playbackPosition = 0) {
             playerUrl = playUrl.toString();
         }
 
-        showVideoPlayer(playerUrl);
+        const destination = new URL(playerUrl, location.origin);
+        if (historyItem) {
+            for (const [key, value] of Object.entries({year: historyItem.movieYear, kind: historyItem.movieKind, episodeName: historyItem.episodeName})) {
+                if (value) destination.searchParams.set(key, value);
+            }
+        }
+        localStorage.setItem('currentEpisodeNames', JSON.stringify(historyItem?.episodeNames || []));
+        window.location.assign(destination.toString());
     } catch (e) {
         // console.error('从历史记录播放失败:', e);
         const simpleUrl = `player.html?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&index=${episodeIndex}`;

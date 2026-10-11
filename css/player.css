@@ -565,3 +565,26 @@ input:checked + .slider:before {
 #username {
     display: none !important;
 }
+
+/* Quick playback controls remain reachable on narrow/touch screens. */
+.quick-play-status { padding: 12px; margin-bottom: 12px; border: 1px solid #334155; border-radius: 12px; background: #142033; }
+.quick-play-status[hidden], .quick-play-choices[hidden], .quick-episode-section[hidden] { display: none !important; }
+.quick-play-status-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.quick-play-status-row > div, .quick-player-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.quick-play-status button, .quick-play-status a, .quick-player-actions button { min-height: 44px; padding: 8px 12px; border: 1px solid #475569; border-radius: 8px; color: #e2e8f0; background: #172538; }
+.quick-play-choices { display: grid; gap: 8px; margin-top: 12px; max-height: 45vh; overflow-y: auto; }
+.quick-play-choices button { text-align: left; overflow-wrap: anywhere; }
+#resourceInfoBarContainer { flex-wrap: wrap; gap: 8px; align-items: center; }
+#resourceInfoBarContainer .resource-info-bar-left { flex-wrap: wrap; min-width: 0; overflow-wrap: anywhere; }
+#resourceInfoBarContainer .resource-switch-btn { min-height: 44px; }
+#modalContent > p { line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+#modalContent > button { min-height: 44px; margin-top: 12px; padding: 8px 12px; background: #1e40af; border-radius: 8px; }
+@media (max-width: 640px) {
+    .quick-player-actions { width: 100%; }
+    .quick-player-actions button { flex: 1; padding: 8px; }
+    #modal > div { padding: 16px; max-height: 85dvh; }
+    .quick-play-status-row > div { width: 100%; }
+    .quick-play-status-row > div > * { flex: 1; text-align: center; }
+    #resourceInfoBarContainer { padding: 10px; }
+    #playerContainer { scroll-margin-top: 8px; }
+}

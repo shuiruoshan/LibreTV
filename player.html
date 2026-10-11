@@ -64,6 +64,12 @@
     </div>
 
     <main class="container mx-auto px-4 py-4">        <!-- 视频播放区 -->
+        <section id="quickPlayStatus" class="quick-play-status player-container" hidden aria-live="polite">
+            <div class="quick-play-status-row"><span data-quick-status>正在寻找播放资源…</span>
+                <div><button type="button" onclick="QuickPlay.manual()">手动选源</button><a href="/" onclick="QuickPlay.stop()">返回首页</a></div>
+            </div>
+            <div id="quickPlayChoices" class="quick-play-choices" hidden></div>
+        </section>
         <div id="playerContainer" class="player-container mb-4">
             <div class="relative">
                 <div id="player" class="player-placeholder">
@@ -92,7 +98,7 @@
         </div>
 
         <!-- 集数导航 -->
-        <div class="player-container">
+        <div class="player-container quick-episode-section" hidden>
             <div class="flex justify-between items-center my-4">
                 <button onclick="playPreviousEpisode()" id="prevButton" class="px-4 py-2 bg-[#222] hover:bg-[#333] border border-[#333] rounded-lg transition-colors">
                     <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +117,7 @@
         </div>
 
         <!-- 添加自动播放开关和排序按钮 -->
-        <div class="player-container mb-2">
+        <div id="playbackOptions" class="player-container mb-2 quick-episode-section" hidden>
             <div class="flex flex-wrap justify-end items-center gap-2">
                 <!-- 自动连播开关 - 分组到左边 -->
                 <div class="flex items-center gap-1 flex-shrink-0 mr-auto">
@@ -153,7 +159,7 @@
         </div>
 
         <!-- 集数网格 -->
-        <div class="player-container">
+        <div class="player-container quick-episode-section" hidden>
             <div class="episode-grid" id="episodesGrid">
                 <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2" id="episodesList">
                     <!-- 集数将在这里动态加载 -->
@@ -240,6 +246,7 @@
     <script src="js/ui.js"></script>
     <script src="js/api.js"></script>
     <script src="js/search.js"></script>
+    <script src="js/quick-play.js"></script>
     <script src="js/player-errors.js"></script>
     <script src="js/player.js"></script>
     <script src="js/pwa-register.js"></script>
