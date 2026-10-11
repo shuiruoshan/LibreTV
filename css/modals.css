@@ -356,3 +356,6 @@
     color: #052e1f;
     background: #34d399;
 }
+
+.quick-card-details { min-height: 40px; padding: 6px 10px; color: #93c5fd; border-radius: 6px; }
+.quick-card-details:hover { background: #243348; }

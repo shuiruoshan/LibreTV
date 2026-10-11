@@ -607,7 +607,7 @@ function renderAdultCards(items, container) {
             const safeCoverUrl = escapeHtmlAttr(originalCoverUrl);
 
             card.innerHTML = `
-                <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="showDetails('${safeIdJs}','${safeTitleJs}','${safeSourceCodeJs}')">
+                <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" data-quick-entry>
                     <img src="${safeCoverUrl}" data-original-src="${safeCoverUrl}" alt="${safeTitle}"
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                         onerror="window.setImageProxyFallback(this, this.dataset.originalSrc, '暂无封面')"
@@ -622,7 +622,7 @@ function renderAdultCards(items, container) {
                     </div>` : ''}
                 </div>
                 <div class="p-2 text-center bg-[#111]">
-                    <button onclick="showDetails('${safeIdJs}','${safeTitleJs}','${safeSourceCodeJs}')"
+                    <button data-quick-entry
                             class="text-sm font-medium text-white truncate w-full hover:text-pink-400 transition"
                             title="${safeTitle}">
                         ${safeTitle}
@@ -630,6 +630,10 @@ function renderAdultCards(items, container) {
                 </div>
             `;
 
+            card.querySelectorAll('[data-quick-entry]').forEach(entry => entry.addEventListener('click', event => {
+                if (event.target.closest('a')) return;
+                QuickPlay.open({ ...QuickPlay.logic.identity(item), id: item.vod_id, source: item.source_code });
+            }));
             fragment.appendChild(card);
         });
     }
@@ -733,7 +737,7 @@ function renderDoubanCards(data, container) {
             
             // 为不同设备优化卡片布局
             card.innerHTML = `
-                <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
+                <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" data-quick-entry>
                     <img src="${safeCoverUrl}" data-original-src="${safeCoverUrl}" alt="${safeTitle}"
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                         onerror="window.setImageProxyFallback(this, this.dataset.originalSrc, '暂无封面')"
@@ -749,7 +753,7 @@ function renderDoubanCards(data, container) {
                     </div>
                 </div>
                 <div class="p-2 text-center bg-[#111]">
-                    <button onclick="fillAndSearchWithDouban('${safeTitle}')" 
+                    <button data-quick-entry
                             class="text-sm font-medium text-white truncate w-full hover:text-pink-400 transition"
                             title="${safeTitle}">
                         ${safeTitle}
@@ -757,6 +761,10 @@ function renderDoubanCards(data, container) {
                 </div>
             `;
             
+            card.querySelectorAll('[data-quick-entry]').forEach(entry => entry.addEventListener('click', event => {
+                if (event.target.closest('a')) return;
+                QuickPlay.open({ title: item.title, year: item.year || '', kind: doubanMovieTvCurrentSwitch === 'tv' ? 'tv' : 'movie' });
+            }));
             fragment.appendChild(card);
         });
     }

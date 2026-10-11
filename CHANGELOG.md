@@ -2,6 +2,19 @@
 
 All notable changes to this maintained LibreTV fork are documented here.
 
+## 1.2.25 - 2026-10-11
+
+### Added
+
+- One-click playback from homepage and search cards, verified history resume, and conservative version matching.
+- Startup recovery tries at most two alternate sources, while manual source, episode and detail controls remain available.
+- Mobile fullscreen attempts landscape orientation and releases the lock on exit; unsupported browsers retain native playback.
+
+### Fixed
+
+- Cross-source episodes use labels instead of array positions, with explicit selection when no safe match exists.
+- History entry preserves title identity and episode metadata for later resume.
+
 ## 1.2.24 - 2026-10-10
 
 ### Fixed

@@ -72,6 +72,7 @@ function createElementStub(tagName = 'div') {
       return null;
     },
     addEventListener() {},
+    querySelectorAll() { return []; }
     remove() {}
   };
 }
@@ -1232,11 +1233,11 @@ test('release metadata is bumped for this update', async () => {
 
   const changelog = await readProjectFile('CHANGELOG.md');
 
-  assert.equal(packageJson.version, '1.2.24');
-  assert.equal(lockJson.version, '1.2.24');
-  assert.equal(lockJson.packages[''].version, '1.2.24');
-  assert.match(config, /version:\s*'1\.2\.24'/);
-  assert.match(serviceWorker, /const APP_VERSION = '202610101600'/);
+  assert.equal(packageJson.version, '1.2.25');
+  assert.equal(lockJson.version, '1.2.25');
+  assert.equal(lockJson.packages[''].version, '1.2.25');
+  assert.match(config, /version:\s*'1\.2\.25'/);
+  assert.match(serviceWorker, /const APP_VERSION = '202610120410'/);
   assert.match(serviceWorker, /'\/css\/theme\.css'/);
   assert.match(serviceWorker, /'\/js\/source-speed\.js'/);
   assert.match(changelog, /## 1\.2\.24 - 2026-10-10[\s\S]*?Douban recommendations load once/);
